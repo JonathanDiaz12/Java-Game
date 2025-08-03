@@ -12,14 +12,14 @@ public class GameBoard extends JFrame {     //creates the game board
 
     public GameBoard(boolean vsComputer) {  // Constructor to initialize the game board
         this.vsComputer = vsComputer;
-        setTitle("Tic Tac Toe");    // Set the title of the game window
-        setSize(300, 300);      // Set the size of the game board
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);     // Exit the application when the window is closed
-        setLayout(new GridLayout(3, 3));    // Set the layout to a 3x3 grid
-        
+    setTitle("Tic Tac Toe");
+    setUndecorated(true); // Remove window borders and title bar
+    setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize to full screen
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setLayout(new GridLayout(3, 3));
 
-        initializeBoard();      // Initialize the game board with buttons and action listeners
-        setVisible(true);   // Make the game board visible
+    initializeBoard();
+    setVisible(true);
     }
 
     private void initializeBoard() {    // Method to initialize the game board
@@ -37,6 +37,24 @@ public class GameBoard extends JFrame {     //creates the game board
         }
     }
 
+    // Change checkWin to return the winning combination indices, or null if no win
+    private int[] checkWin(char playerSymbol) {
+        int[][] winConditions = {
+            {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Rows
+            {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Columns
+            {0, 4, 8}, {2, 4, 6}             // Diagonals
+        };
+
+        for (int[] condition : winConditions) {
+            if (board[condition[0]] == playerSymbol &&
+                board[condition[1]] == playerSymbol &&
+                board[condition[2]] == playerSymbol) {
+                return condition; // Return winning indices
+            }
+        }
+        return null;
+    }
+
     private void handleMove(int index) {        // Method to handle a player's move
         if (board[index] == ' ') {
             board[index] = isPlayerXTurn ? 'X' : 'O';   // Update the board with the player's symbol
@@ -45,7 +63,12 @@ public class GameBoard extends JFrame {     //creates the game board
 
             char currentPlayer = board[index];  // Get the current player's symbol
 
-            if (checkWin(currentPlayer)) {  // Check if the current player has won
+            int[] winCombo = checkWin(currentPlayer);
+            if (winCombo != null) { // If there's a win
+                // Highlight the winning buttons
+                for (int i : winCombo) {
+                    buttons[i].setBackground(Color.YELLOW);
+                }
                 int response = JOptionPane.showConfirmDialog(this,
                         "Player " + currentPlayer + " wins! Play again?",
                         "Game Over",
@@ -91,24 +114,6 @@ public class GameBoard extends JFrame {     //creates the game board
         }
     }
 
-    private boolean checkWin(char playerSymbol) {   // Method to check if the current player has won
-        int[][] winConditions = {
-            {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Rows
-            {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Columns
-            {0, 4, 8}, {2, 4, 6}             // Diagonals
-        };
-
-        for (int[] condition : winConditions) { // Check each winning condition
-            if (board[condition[0]] == playerSymbol &&
-                board[condition[1]] == playerSymbol &&
-                board[condition[2]] == playerSymbol) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private boolean checkDraw() {// Method to check if the game is a draw
         for (char c : board) {
             if (c == ' ') return false;
@@ -121,6 +126,7 @@ public class GameBoard extends JFrame {     //creates the game board
             board[i] = ' ';     // Reset the board state
             buttons[i].setText("");     // Clear the button text
             buttons[i].setEnabled(true);
+            buttons[i].setBackground(null); // Reset background color
         }
         isPlayerXTurn = true;       // Reset the turn to player X
     }
